@@ -1,0 +1,10 @@
+@import "tailwindcss";
+
+:root { --background: #111b1d; --foreground: #f5f0df; }
+@theme inline { --color-background: var(--background); --color-foreground: var(--foreground); --font-sans: var(--font-geist-sans); --font-mono: var(--font-geist-mono); }
+body { background: var(--background); color: var(--foreground); font-family: Arial, Helvetica, sans-serif; }
+.shell-input { border: 1px solid rgb(255 255 255 / 12%); border-radius: .5rem; background: rgb(0 0 0 / 15%); padding: .55rem .75rem; color: #f5f0df; font-size: .875rem; outline: none; }
+.shell-input::placeholder { color: #8f9d98; }
+.shell-input:focus { border-color: #e6a75b; }
+.control-button { border: 1px solid rgb(255 255 255 / 12%); border-radius: .5rem; padding: .5rem .75rem; color: #d9ded7; font-size: .875rem; transition: background-color .15s ease; }
+.control-button:hover { background: rgb(255 255 255 / 8%); }
