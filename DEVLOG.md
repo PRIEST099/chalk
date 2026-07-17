@@ -31,3 +31,12 @@ Built: ELK-driven diagram positioning for flow and timeline layouts; determinist
 [HUMAN DECISION] Prioritize readable edge labels and clearly differentiated node types in the dark-board visual language.
 Codex speedups worth mentioning: Added the layout engine, visual vocabulary, sample-driven verification, and browser screenshots in one focused polish phase.
 Problems hit and how resolved: React Flow initially fit the temporary node positions before asynchronous layout resolved; added a post-layout viewport fit and bounded cycle coordinates.
+
+[CODEX DECISION] Phase 3 punch-list verification: live typed probes passed—correction removed `evaporation`; Sun/Ocean produced exactly one `sun-heats-ocean` edge and no node; re-mentioning Evaporation returned a highlight without a duplicate. No Diagram Director prompt change was needed.
+
+## 2026-07-17 Phase 4 — Gestures
+Built: In-browser MediaPipe HandLandmarker PiP with landmark overlay; throttled and smoothed point cursor; debounced pinch selection; open-palm swipe undo; pointerContext submission; complete mouse and keyboard parity; camera-denied typed/mouse fallback.
+[CODEX DECISION] Keep landmark processing in requestAnimationFrame and mutate the cursor DOM ref directly, avoiding React render storms while constraining inference to 30fps.
+[HUMAN DECISION] Add self-edge rejection plus solid smoothstep edge labels and post-layout fit-to-view as the Phase 4 opening punch list.
+Codex speedups worth mentioning: Connected gesture recognition, pointer-aware model context, and the no-camera control path without compromising the existing typed/speech pipeline.
+Problems hit and how resolved: Browser hand tracking cannot be verified without an active physical camera; the app exposes a friendly explicit opt-in and remains completely usable through mouse/keyboard controls.

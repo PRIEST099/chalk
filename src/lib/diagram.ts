@@ -100,7 +100,7 @@ export function retainValidOps(ops: DiagramOp[], startingNodeIds: Iterable<strin
     const needsNodes = (ids: string[]) => ids.every((id) => nodeIds.has(id));
     const accepted = operation.op === "add_node" || operation.op === "set_layout" || operation.op === "clear_highlights" || operation.op === "no_op"
       || (operation.op === "update_node" || operation.op === "remove_node" || operation.op === "annotate" ? nodeIds.has(operation.op === "annotate" ? operation.nodeId : operation.id)
-        : operation.op === "add_edge" ? needsNodes([operation.source, operation.target]) && !edgeIds.has(operation.id)
+          : operation.op === "add_edge" ? operation.source !== operation.target && needsNodes([operation.source, operation.target]) && !edgeIds.has(operation.id)
           : operation.op === "remove_edge" ? edgeIds.has(operation.id)
             : operation.op === "group_nodes" || operation.op === "highlight" ? needsNodes(operation.nodeIds) : false);
     if (!accepted) { console.warn("Dropped invalid diagram operation", operation); continue; }
