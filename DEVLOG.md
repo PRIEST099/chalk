@@ -63,3 +63,5 @@ Codex speedups worth mentioning: Audited every reachable commit and every local 
 Problems hit and how resolved: The full object-store audit found one unreachable `.env.example` blob containing a key pattern; it was pruned before release. The initial production build could not fetch Google Fonts in this environment; replaced the remote build dependency with local system font fallbacks.
 
 [CODEX DECISION] PNG export captures React Flow's renderer rather than its outer container, excluding the webcam video and landmark canvas that `html-to-image` cannot safely serialize.
+
+[HUMAN DECISION] Direct production retest confirmed the typed correction behavior works; the earlier automated browser observation was a timing false negative, so no Diagram Director prompt change is authorized or needed.
