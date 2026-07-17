@@ -11,3 +11,6 @@ body { background: var(--background); color: var(--foreground); font-family: Ari
 .chalk-flow-controls { border: 1px solid rgb(255 255 255 / 18%) !important; box-shadow: 0 4px 16px rgb(0 0 0 / 35%) !important; }
 .chalk-flow-controls button { background: #172326 !important; border-bottom-color: rgb(255 255 255 / 14%) !important; fill: #f5f0df !important; color: #f5f0df !important; }
 .chalk-flow-controls button:hover { background: #29413d !important; }
+.room-menu-button { display: block; width: 100%; border-radius: .55rem; padding: .55rem .7rem; color: #dce5df; font-size: .8125rem; text-align: left; transition: background-color .15s ease, color .15s ease; }
+.room-menu-button:hover:not(:disabled) { background: rgb(255 255 255 / 8%); color: #fff; }
+.room-menu-button:disabled { cursor: not-allowed; opacity: .4; }
