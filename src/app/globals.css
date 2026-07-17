@@ -8,3 +8,6 @@ body { background: var(--background); color: var(--foreground); font-family: Ari
 .shell-input:focus { border-color: #e6a75b; }
 .control-button { border: 1px solid rgb(255 255 255 / 12%); border-radius: .5rem; padding: .5rem .75rem; color: #d9ded7; font-size: .875rem; transition: background-color .15s ease; }
 .control-button:hover { background: rgb(255 255 255 / 8%); }
+.chalk-flow-controls { border: 1px solid rgb(255 255 255 / 18%) !important; box-shadow: 0 4px 16px rgb(0 0 0 / 35%) !important; }
+.chalk-flow-controls button { background: #172326 !important; border-bottom-color: rgb(255 255 255 / 14%) !important; fill: #f5f0df !important; color: #f5f0df !important; }
+.chalk-flow-controls button:hover { background: #29413d !important; }
