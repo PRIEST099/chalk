@@ -17,7 +17,18 @@ GPT-5.6 is Chalk's core: the Diagram Director translates live speech and gesture
 ```ts
 type NodeKind = "concept" | "actor" | "process" | "stage" | "data" | "example" | "note";
 type LayoutHint = "flow" | "tree" | "timeline" | "cycle" | "radial";
-type DiagramOp = /* add, update, remove, group, layout, highlight, annotate, or no-op */;
+type DiagramOp =
+  | { op: "add_node"; id: string; label: string; kind: NodeKind; group?: string }
+  | { op: "update_node"; id: string; label?: string; kind?: NodeKind }
+  | { op: "remove_node"; id: string }
+  | { op: "add_edge"; id: string; source: string; target: string; label?: string; directed?: boolean }
+  | { op: "remove_edge"; id: string }
+  | { op: "group_nodes"; id: string; label: string; nodeIds: string[] }
+  | { op: "set_layout"; hint: LayoutHint }
+  | { op: "highlight"; nodeIds: string[]; reason?: string }
+  | { op: "clear_highlights" }
+  | { op: "annotate"; nodeId: string; text: string }
+  | { op: "no_op"; reason: string };
 ```
 
 ## Architecture
