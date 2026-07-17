@@ -24,3 +24,10 @@ Built: Web Speech API implementation behind TranscriptSource; final/interim tran
 [HUMAN DECISION] Voice behavior is approved; typed testing isolates the observed voice misfires to speech-recognition noise, so the Diagram Director prompt remains unchanged.
 Codex speedups worth mentioning: Added the continuous-speech lifecycle, browser-permission recovery paths, and rate-conscious batching without altering the typed core loop.
 Problems hit and how resolved: Chrome may end continuous recognition unexpectedly; restart only while listening remains explicitly enabled, while Stop aborts both recognition and pending interpretation work.
+
+## 2026-07-17 Phase 3 — Layout & visual polish
+Built: ELK-driven diagram positioning for flow and timeline layouts; deterministic bounded cycle placement based on ELK ordering; 500ms position and viewport transitions; node-kind accents/icons; stronger highlight glow; high-contrast edge labels; WWI sample alongside the water-cycle sample.
+[CODEX DECISION] Use ELK layered layout for reliable ordering, then place cycle nodes in a bounded circular arrangement because ELK's radial algorithm overflowed on cyclic input in the browser build.
+[HUMAN DECISION] Prioritize readable edge labels and clearly differentiated node types in the dark-board visual language.
+Codex speedups worth mentioning: Added the layout engine, visual vocabulary, sample-driven verification, and browser screenshots in one focused polish phase.
+Problems hit and how resolved: React Flow initially fit the temporary node positions before asynchronous layout resolved; added a post-layout viewport fit and bounded cycle coordinates.
