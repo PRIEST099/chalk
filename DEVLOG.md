@@ -54,3 +54,10 @@ Codex speedups worth mentioning: Added the second GPT-5.6 route, durable session
 Problems hit and how resolved: The existing board component had accumulated tightly coupled render state; separated the replay display state from live state and deferred restore/playback state changes to avoid React effect cascades.
 
 [CODEX DECISION] PNG export converts `html-to-image`'s generated data URL back into an image Blob before download; wrapping the URL string itself produced a text payload mislabeled as a PNG.
+
+## 2026-07-17 Phase 6 — Deploy & judge kit
+Built: Public-release README with the required product, GPT-5.6, architecture, collaboration, setup, and judge-test sections; public-demo rate limits; production-build preparation; and GitHub/Vercel handoff materials.
+[CODEX DECISION] Use lightweight in-memory per-IP route limits (20 interpret and 5 handout calls per minute) to protect the public demo balance while remaining generous for normal judging; production verification remains pending the hosted URL.
+[HUMAN DECISION] Keep GitHub creation and Vercel environment-variable entry under the product owner’s control, with Codex providing precise release instructions and later production QA.
+Codex speedups worth mentioning: Audited every reachable commit and every local Git blob object for common API-key patterns, completed the release documentation, and removed the build-time external font dependency for offline-reliable builds.
+Problems hit and how resolved: The full object-store audit found one unreachable `.env.example` blob containing a key pattern; it was pruned before release. The initial production build could not fetch Google Fonts in this environment; replaced the remote build dependency with local system font fallbacks.

@@ -3,13 +3,18 @@ import { zodTextFormat } from "openai/helpers/zod";
 import { NextResponse } from "next/server";
 import { DIAGRAM_DIRECTOR_PROMPT } from "@/lib/diagram-director";
 import { diagramOpsSchema, interpretRequestSchema, normalizeModelOps, retainValidOps } from "@/lib/diagram";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 let sessionInputTokens = 0;
 let sessionOutputTokens = 0;
 
 export async function POST(request: Request) {
-  const parsedRequest = interpretRequestSchema.safeParse(await request.json());
+  const rateLimited = checkRateLimit(request, "interpret", 20);
+  if (rateLimited) return rateLimited;
+  let payload: unknown;
+  try { payload = await request.json(); } catch { return NextResponse.json({ error: "Chalk could not read that lesson update. Please try again." }, { status: 400 }); }
+  const parsedRequest = interpretRequestSchema.safeParse(payload);
   if (!parsedRequest.success) return NextResponse.json({ error: "Please send a valid lesson update." }, { status: 400 });
   if (!process.env.OPENAI_API_KEY) return NextResponse.json({ error: "Add OPENAI_API_KEY to .env.local, then try again." }, { status: 503 });
   try {

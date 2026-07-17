@@ -1,11 +1,14 @@
 import OpenAI from "openai";
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 const requestSchema = z.object({ title: z.string().min(1).max(160), subjectHint: z.string().max(120).optional(), transcript: z.string().min(1).max(12000), diagram: z.object({ nodes: z.array(z.object({ id: z.string(), label: z.string(), kind: z.string() })), edges: z.array(z.object({ source: z.string(), target: z.string(), label: z.string().optional() })) }) });
 let sessionInputTokens = 0; let sessionOutputTokens = 0;
 
 export async function POST(request: Request) {
+  const rateLimited = checkRateLimit(request, "summarize", 5);
+  if (rateLimited) return rateLimited;
   let payload: unknown;
   try { payload = await request.json(); } catch { return NextResponse.json({ error: "Chalk could not read that handout request. Please try again." }, { status: 400 }); }
   const parsed = requestSchema.safeParse(payload);
