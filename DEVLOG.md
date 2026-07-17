@@ -52,3 +52,5 @@ Built: Server-only `/api/summarize` handout generation with per-call and running
 [HUMAN DECISION] Require the handout to stay grounded exclusively in the final diagram and transcript, including a diagram-specific recap, glossary, and answered comprehension questions.
 Codex speedups worth mentioning: Added the second GPT-5.6 route, durable session artifacts, and a presentation-friendly replay path while preserving the existing typed, voice, and gesture loop.
 Problems hit and how resolved: The existing board component had accumulated tightly coupled render state; separated the replay display state from live state and deferred restore/playback state changes to avoid React effect cascades.
+
+[CODEX DECISION] PNG export converts `html-to-image`'s generated data URL back into an image Blob before download; wrapping the URL string itself produced a text payload mislabeled as a PNG.
