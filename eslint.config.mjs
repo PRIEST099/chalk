@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // The demo-video project has its own toolchain and eslint config.
+    "remotion/**",
   ]),
 ]);
 

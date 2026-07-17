@@ -6,7 +6,7 @@ Chalk is a live teaching board that listens to an explanation and grows a clean,
 
 ## What it does
 
-Teachers can speak naturally, type an explanation, or load a sample lesson while Chalk turns the lesson into an evolving visual map. A webcam hand cursor and ordinary mouse controls let a teacher point at concepts, select two of them, and say “connect these two.” The completed lesson can be replayed, exported as a PNG or JSON session, and turned into a grounded Markdown handout with a recap, glossary, and comprehension questions. It is designed to give visual learners and deaf or hard-of-hearing students a durable second channel for the meaning of a lesson.
+Teachers can speak naturally, type an explanation, or load a sample lesson while Chalk turns the lesson into an evolving visual map. A webcam hand cursor and ordinary mouse controls let a teacher point at concepts, select two of them, and say “connect these two.” The completed lesson can be replayed, exported as a PNG or JSON session, downloaded as a final-text transcript, and turned into a grounded Markdown handout with a recap, glossary, and comprehension questions. It is designed to give visual learners and deaf or hard-of-hearing students a durable second channel for the meaning of a lesson.
 
 ## Track: Education
 
@@ -49,6 +49,7 @@ flowchart LR
   GPT --> Ops[Validated DiagramOps]
   Ops --> Canvas[React Flow + ELK canvas]
   Canvas --> Export[Replay / PNG / JSON]
+  Transcript --> TranscriptExport[Plain-text transcript]
   Transcript --> Handout[/api/summarize]
   Canvas --> Handout
   Handout --> GPTHandout[GPT-5.6 Class Handout]
@@ -78,7 +79,7 @@ The product owner approved phase gates and tested the real interaction paths; Co
 Requirements: Node.js 20+ and **Chrome desktop** for live speech and webcam gestures. Typed input, samples, replay, and exports work without microphone or camera access.
 
 ```bash
-git clone <YOUR-REPOSITORY-URL>
+git clone https://github.com/PRIEST099/chalk.git
 cd Chalk
 npm install
 copy .env.example .env.local
@@ -101,16 +102,16 @@ Open `http://localhost:3000`. The OpenAI key is used only by server-side route h
 
 ## Judge Testing Guide
 
-Hosted URL: `[ADD VERCEL URL]`
+Hosted URL: <https://chalk-ebon.vercel.app/>
 
 ### First path: no microphone or camera (about 2 minutes)
 
 1. Open the hosted URL in Chrome desktop and click **Load water-cycle sample**.
 2. Watch Sun, Ocean, Evaporation, Condensation, Clouds, and Precipitation form an animated cycle.
-3. Type `Actually, scratch that last part.` and click **Draw it**; the latest relevant element should be removed. Use **Undo** to restore it.
+3. Type `Actually, scratch that last part.` and click **Draw it**; the latest relevant element should be removed. Use **Undo** twice if needed, then **Redo** (or Ctrl/Cmd+Shift+Z) to step forward again.
 4. Click **Replay**, scrub or step through the operations, then **Exit replay**; the live board remains intact.
 5. Click **Download handout (.md)** and inspect the diagram-grounded recap, glossary, questions, and answers.
-6. Try **Export PNG**, **Save JSON**, then clear and **Load JSON** to restore the session.
+6. Try **Export PNG**, **Save JSON**, **Download transcript (.txt)**, then clear and **Load JSON** to restore the session.
 
 ### Microphone path
 
@@ -121,7 +122,7 @@ Hosted URL: `[ADD VERCEL URL]`
 ### Camera and gesture path
 
 1. Click **Enable hand tracking** and allow camera access; the bottom-right PiP should show landmarks.
-2. Point at a node for about half a second to glow/point it, pinch to select it, then pinch a second node.
+2. Point at a node for about half a second to show its warm outer ring, pinch to fill and check-mark it as selected, then pinch a second node.
 3. Say “connect these two” to create the edge. Open your palm and swipe left to undo.
 4. Deny camera access to confirm the friendly fallback; mouse hover, click selection, and Ctrl/Cmd+Z remain fully usable.
 

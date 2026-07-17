@@ -1,0 +1,13 @@
+node_modules
+dist
+.DS_Store
+.env
+
+# Ignore the output video from Git but not videos you import into src/.
+out
+
+# Recordings and narration are produced locally and published via YouTube; keep the repo light.
+# Remove these lines (or use Git LFS) if the raw footage should ship with the repo.
+public/recordings/*.mp4
+public/audio/*.mp3
+public/audio/*.wav
