@@ -21,7 +21,7 @@ export function HandTracker({ onPoint, onPinch, onSwipeLeft, onError, onDebug }:
       if (indexExtended) onPoint(smooth);
       if (!pinchActiveRef.current && pinchDistance < 0.32 && now - pinchCooldownRef.current > 650) { pinchActiveRef.current = true; pinchCooldownRef.current = now; onPinch(); }
       if (pinchActiveRef.current && pinchDistance > 0.44) pinchActiveRef.current = false;
-      const previousWrist = wristRef.current; const velocity = previousWrist ? (hand[0].x - previousWrist.x) / Math.max((now - previousWrist.at) / 1000, 0.001) : 0; if (openPalm && velocity < -1.1 && now - swipeCooldownRef.current > 900) { swipeCooldownRef.current = now; onSwipeLeft(); } wristRef.current = { x: hand[0].x, at: now };
+      const previousWrist = wristRef.current; const velocity = previousWrist ? (previousWrist.x - hand[0].x) / Math.max((now - previousWrist.at) / 1000, 0.001) : 0; if (openPalm && velocity < -1.1 && now - swipeCooldownRef.current > 900) { swipeCooldownRef.current = now; onSwipeLeft(); } wristRef.current = { x: hand[0].x, at: now };
       onDebug({ gesture: pinchActiveRef.current ? "Pinch" : openPalm ? "Open palm" : indexExtended ? "Point" : "Tracking", pinchDistance, point: smooth, fps: fps.value });
     } else onDebug({ gesture: "No hand", pinchDistance: 0, point: smoothRef.current ?? { x: 0, y: 0 }, fps: fps.value });
     frameRef.current = requestAnimationFrame((time) => processRef.current(time));

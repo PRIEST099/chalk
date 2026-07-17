@@ -44,3 +44,4 @@ Problems hit and how resolved: Browser hand tracking cannot be verified without 
 [CODEX DECISION] Map smoothed hand coordinates into the canvas element's bounding rectangle—not the full browser viewport—and align the axis with the unmirrored PiP, preventing the gesture cursor from appearing only when the finger leaves the expected board area.
 
 [CODEX DECISION] Gesture defect root causes: viewport-pixel hit testing ignored React Flow transforms, the PiP/cursor mirror directions differed, repeated pinches had no exit hysteresis, and radial auto-fit could run after manual navigation. Fixed with Flow-space hit testing, matched mirroring, hand-size-normalized pinch enter/exit thresholds plus cooldowns, open-palm velocity-gated swipe, and a manual-viewport grace period.
+[CODEX DECISION] Swipe velocity must use the mirrored hand axis, matching the PiP and cursor coordinate system; using the raw camera axis inverted the left-swipe detector.
