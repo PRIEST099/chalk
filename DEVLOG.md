@@ -61,3 +61,5 @@ Built: Public-release README with the required product, GPT-5.6, architecture, c
 [HUMAN DECISION] Keep GitHub creation and Vercel environment-variable entry under the product owner’s control, with Codex providing precise release instructions and later production QA.
 Codex speedups worth mentioning: Audited every reachable commit and every local Git blob object for common API-key patterns, completed the release documentation, and removed the build-time external font dependency for offline-reliable builds.
 Problems hit and how resolved: The full object-store audit found one unreachable `.env.example` blob containing a key pattern; it was pruned before release. The initial production build could not fetch Google Fonts in this environment; replaced the remote build dependency with local system font fallbacks.
+
+[CODEX DECISION] PNG export captures React Flow's renderer rather than its outer container, excluding the webcam video and landmark canvas that `html-to-image` cannot safely serialize.
