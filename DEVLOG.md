@@ -45,3 +45,10 @@ Problems hit and how resolved: Browser hand tracking cannot be verified without 
 
 [CODEX DECISION] Gesture defect root causes: viewport-pixel hit testing ignored React Flow transforms, the PiP/cursor mirror directions differed, repeated pinches had no exit hysteresis, and radial auto-fit could run after manual navigation. Fixed with Flow-space hit testing, matched mirroring, hand-size-normalized pinch enter/exit thresholds plus cooldowns, open-palm velocity-gated swipe, and a manual-viewport grace period.
 [CODEX DECISION] Swipe velocity must use the mirrored hand axis, matching the PiP and cursor coordinate system; using the raw camera axis inverted the left-swipe detector.
+
+## 2026-07-17 Phase 5 — Replay, export, handout, persistence
+Built: Server-only `/api/summarize` handout generation with per-call and running token logging; Markdown handout download; dark PNG and portable JSON export/import; debounced local session restore; clear confirmation; and an isolated replay scrubber with play, pause, step, and exit controls.
+[CODEX DECISION] Rebuild replay from the immutable ops log into a separate display diagram, so replay never mutates or risks losing the live board.
+[HUMAN DECISION] Require the handout to stay grounded exclusively in the final diagram and transcript, including a diagram-specific recap, glossary, and answered comprehension questions.
+Codex speedups worth mentioning: Added the second GPT-5.6 route, durable session artifacts, and a presentation-friendly replay path while preserving the existing typed, voice, and gesture loop.
+Problems hit and how resolved: The existing board component had accumulated tightly coupled render state; separated the replay display state from live state and deferred restore/playback state changes to avoid React effect cascades.
