@@ -5,6 +5,8 @@ import { DIAGRAM_DIRECTOR_PROMPT } from "@/lib/diagram-director";
 import { diagramOpsSchema, interpretRequestSchema, normalizeModelOps, retainValidOps } from "@/lib/diagram";
 
 export const runtime = "nodejs";
+let sessionInputTokens = 0;
+let sessionOutputTokens = 0;
 
 export async function POST(request: Request) {
   const parsedRequest = interpretRequestSchema.safeParse(await request.json());
@@ -14,6 +16,8 @@ export async function POST(request: Request) {
     const input = parsedRequest.data;
     const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
     const completion = await client.responses.parse({ model: process.env.OPENAI_MODEL ?? "gpt-5.6", input: [{ role: "system", content: DIAGRAM_DIRECTOR_PROMPT }, { role: "user", content: JSON.stringify({ transcript_delta: input.transcriptDelta, recent_transcript: input.recentTranscript, diagram: input.diagram, pointer_context: input.pointerContext, subject_hint: input.subjectHint }) }], text: { format: zodTextFormat(diagramOpsSchema, "diagram_operations") } });
+    const usage = completion.usage;
+    if (usage) { sessionInputTokens += usage.input_tokens; sessionOutputTokens += usage.output_tokens; console.info("Chalk interpret usage", { inputTokens: usage.input_tokens, outputTokens: usage.output_tokens, sessionInputTokens, sessionOutputTokens }); }
     const result = completion.output_parsed;
     if (!result) return NextResponse.json({ ops: [] });
     const normalizedOps = normalizeModelOps(result.ops);

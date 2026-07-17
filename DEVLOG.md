@@ -17,3 +17,10 @@ Built: Server-only Diagram Director route with strict structured-output and refe
 [HUMAN DECISION] Phase 1 acceptance was manually verified with the water cycle, correction, no-op chit-chat, re-explanation highlight, and undo behaviors.
 Codex speedups worth mentioning: Built the validated model-to-canvas loop, resilient operation handling, and focused automated schema tests alongside the interactive path.
 Problems hit and how resolved: Structured Outputs rejected optional Zod fields; used required nullable model fields and immediate normalization, documented above.
+
+## 2026-07-17 Phase 2 — Live speech
+Built: Web Speech API implementation behind TranscriptSource; final/interim transcript display; request coalescing and cancellation; automatic recognition restart; typed-input fallback; live status states; server-side token-usage/session-total console logs.
+[CODEX DECISION] Keep Web Speech isolated behind TranscriptSource so a browser-native live source and TypedInput share one batching and interpretation pipeline.
+[HUMAN DECISION] Voice behavior is approved; typed testing isolates the observed voice misfires to speech-recognition noise, so the Diagram Director prompt remains unchanged.
+Codex speedups worth mentioning: Added the continuous-speech lifecycle, browser-permission recovery paths, and rate-conscious batching without altering the typed core loop.
+Problems hit and how resolved: Chrome may end continuous recognition unexpectedly; restart only while listening remains explicitly enabled, while Stop aborts both recognition and pending interpretation work.
