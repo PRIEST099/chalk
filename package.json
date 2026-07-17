@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "test": "tsx tests/phase-1-validation.ts"
+    "test": "tsx tests/phase-1-validation.ts && tsx tests/server-hardening.ts"
   },
   "dependencies": {
     "@mediapipe/tasks-vision": "^0.10.35",

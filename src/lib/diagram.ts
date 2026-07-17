@@ -67,10 +67,21 @@ export type DiagramGroup = { id: string; label: string; nodeIds: string[] };
 export type Diagram = { nodes: DiagramNode[]; edges: DiagramEdge[]; groups: DiagramGroup[]; layout?: LayoutHint; highlights: string[] };
 export const emptyDiagram = (): Diagram => ({ nodes: [], edges: [], groups: [], highlights: [] });
 
+const requestId = z.string().min(1).max(80);
+const requestLabel = z.string().min(1).max(120);
+const compactDiagramSchema = z.object({
+  nodes: z.array(z.object({ id: requestId, label: requestLabel, kind: z.enum(nodeKinds), group: z.string().max(120).optional() })).max(40),
+  edges: z.array(z.object({ id: requestId, source: requestId, target: requestId, label: z.string().max(120).optional() })).max(80),
+  groups: z.array(z.object({ id: requestId, label: requestLabel })).max(12),
+  layout: z.enum(layoutHints).optional(),
+});
+
 export const interpretRequestSchema = z.object({
-  transcriptDelta: z.string().min(1).max(2000), recentTranscript: z.string().max(2000),
-  diagram: z.object({ nodes: z.array(z.object({ id: z.string(), label: z.string(), kind: z.enum(nodeKinds), group: z.string().optional() })), edges: z.array(z.object({ id: z.string(), source: z.string(), target: z.string(), label: z.string().optional() })), groups: z.array(z.object({ id: z.string(), label: z.string() })), layout: z.enum(layoutHints).optional() }),
-  pointerContext: z.object({ pointedNodeIds: z.array(z.string()), selectedNodeIds: z.array(z.string()).max(2) }), subjectHint: z.string().max(120).optional(),
+  transcriptDelta: z.string().min(1).max(4_000),
+  recentTranscript: z.string().max(4_000),
+  diagram: compactDiagramSchema,
+  pointerContext: z.object({ pointedNodeIds: z.array(requestId).max(4), selectedNodeIds: z.array(requestId).max(2) }),
+  subjectHint: z.string().max(120).optional(),
 });
 export type InterpretRequest = z.infer<typeof interpretRequestSchema>;
 
