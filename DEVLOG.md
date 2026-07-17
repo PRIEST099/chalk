@@ -40,3 +40,5 @@ Built: In-browser MediaPipe HandLandmarker PiP with landmark overlay; throttled 
 [HUMAN DECISION] Add self-edge rejection plus solid smoothstep edge labels and post-layout fit-to-view as the Phase 4 opening punch list.
 Codex speedups worth mentioning: Connected gesture recognition, pointer-aware model context, and the no-camera control path without compromising the existing typed/speech pipeline.
 Problems hit and how resolved: Browser hand tracking cannot be verified without an active physical camera; the app exposes a friendly explicit opt-in and remains completely usable through mouse/keyboard controls.
+
+[CODEX DECISION] Map smoothed hand coordinates into the canvas element's bounding rectangle—not the full browser viewport—and align the axis with the unmirrored PiP, preventing the gesture cursor from appearing only when the finger leaves the expected board area.
