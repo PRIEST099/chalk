@@ -40,17 +40,17 @@ type DiagramOp =
 flowchart LR
   Mic[Chrome Web Speech API] --> Transcript[Rolling transcript]
   Typed[Typed input] --> Transcript
-  Transcript --> Interpret[/api/interpret]
+  Transcript --> Interpret["/api/interpret"]
   Camera[Webcam] --> MediaPipe[MediaPipe HandLandmarker]
-  Mouse[Mouse hover/click] --> Pointer[Pointer context]
+  Mouse["Mouse hover/click"] --> Pointer[Pointer context]
   MediaPipe --> Pointer
   Pointer --> Interpret
   Interpret --> GPT[GPT-5.6 Diagram Director]
   GPT --> Ops[Validated DiagramOps]
   Ops --> Canvas[React Flow + ELK canvas]
-  Canvas --> Export[Replay / PNG / JSON]
+  Canvas --> Export["Replay / PNG / JSON"]
   Transcript --> TranscriptExport[Plain-text transcript]
-  Transcript --> Handout[/api/summarize]
+  Transcript --> Handout["/api/summarize"]
   Canvas --> Handout
   Handout --> GPTHandout[GPT-5.6 Class Handout]
   GPTHandout --> Markdown[Markdown handout]
@@ -106,22 +106,22 @@ Hosted URL: <https://chalk-ebon.vercel.app/>
 
 ### First path: no microphone or camera (about 2 minutes)
 
-1. Open the hosted URL in Chrome desktop and click **Load water-cycle sample**.
+1. Open the hosted URL in Chrome desktop, open the **⋯** menu (More lesson controls) in the bottom dock, and click **Load water-cycle sample**.
 2. Watch Sun, Ocean, Evaporation, Condensation, Clouds, and Precipitation form an animated cycle.
-3. Type `Actually, scratch that last part.` and click **Draw it**; the latest relevant element should be removed. Use **Undo** twice if needed, then **Redo** (or Ctrl/Cmd+Shift+Z) to step forward again.
-4. Click **Replay**, scrub or step through the operations, then **Exit replay**; the live board remains intact.
-5. Click **Download handout (.md)** and inspect the diagram-grounded recap, glossary, questions, and answers.
-6. Try **Export PNG**, **Save JSON**, **Download transcript (.txt)**, then clear and **Load JSON** to restore the session.
+3. Type `Actually, scratch that last part.` in the **Type instead** box at the bottom of the Captions panel and click **Draw**; the latest relevant element should be removed. **Undo** and **Redo** live in the **⋯** menu (or Ctrl/Cmd+Z and Ctrl/Cmd+Shift+Z).
+4. Click the **Replay lesson** button in the dock, scrub the progress slider back and forth, then **Exit replay**; the live board remains intact.
+5. Open the **Export** menu in the dock and click **Download handout**; inspect the diagram-grounded recap, glossary, questions, and answers.
+6. From the same **Export** menu try **Export PNG**, **Save JSON**, and **Download transcript**; then use **Clear board** and **Load JSON** (both in the **⋯** menu) to restore the session.
 
 ### Microphone path
 
-1. Click **Start listening** and allow microphone access in Chrome.
+1. Click the **mic button** (Start listening) in the bottom dock and allow microphone access in Chrome.
 2. Say a short lesson naturally; final transcript text should appear solid, interim text ghosted, and the status should move through Listening, Thinking, Drawing, and Idle.
 3. Say a correction such as “Actually, scratch that last part” and confirm the board corrects itself. Click **Stop listening** to immediately stop recognition and pending interpretation.
 
 ### Camera and gesture path
 
-1. Click **Enable hand tracking** and allow camera access; the bottom-right PiP should show landmarks.
+1. Click the **camera button** (Enable hand tracking camera) in the bottom dock and allow camera access; the presenter tile at the bottom-right of the board shows your mirrored video with hand landmarks.
 2. Point at a node for about half a second to show its warm outer ring, pinch to fill and check-mark it as selected, then pinch a second node.
 3. Say “connect these two” to create the edge. Open your palm and swipe left to undo.
 4. Deny camera access to confirm the friendly fallback; mouse hover, click selection, and Ctrl/Cmd+Z remain fully usable.
