@@ -82,7 +82,18 @@ Requirements: Node.js 20+ and **Chrome desktop** for live speech and webcam gest
 git clone https://github.com/PRIEST099/chalk.git
 cd Chalk
 npm install
-copy .env.example .env.local
+```
+
+Create your local environment file:
+
+```powershell
+# Windows PowerShell
+Copy-Item .env.example .env.local
+```
+
+```bash
+# macOS, Linux, or Git Bash
+cp .env.example .env.local
 ```
 
 Set these values in `.env.local`:

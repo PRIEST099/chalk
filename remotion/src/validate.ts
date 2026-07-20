@@ -1,5 +1,5 @@
 import { getRemotionEnvironment } from "remotion";
-import { LIVE_URL, MAX_DURATION_SEC, REPO_URL, timeline, totalDurationSec, type RecordingSegment, type Segment } from "./timeline";
+import { FPS, LIVE_URL, MAX_DURATION_SEC, NARRATION_DELAY_SEC, REPO_URL, timeline, totalDurationInFrames, type RecordingSegment, type Segment } from "./timeline";
 import { availableAudioFiles, availableRecordingFiles, mediaDurationsSec } from "./generated-media";
 
 const TOLERANCE_SEC = 0.05;
@@ -19,8 +19,6 @@ const subtitleProblems = (segment: Segment): string[] => {
 const trimProblems = (segment: RecordingSegment): string[] => {
   const problems: string[] = [];
   if (segment.endAtSec <= segment.startFromSec) problems.push(`Segment "${segment.id}" trims to nothing (startFromSec ${segment.startFromSec} >= endAtSec ${segment.endAtSec}).`);
-  const windowSec = segment.endAtSec - segment.startFromSec;
-  if (windowSec + TOLERANCE_SEC < segment.targetDurationSec) problems.push(`Segment "${segment.id}" declares only ${windowSec.toFixed(2)}s of source but the sequence lasts ${segment.targetDurationSec}s — the video would unmount and leave an empty frame for the tail. Extend endAtSec.`);
   return problems;
 };
 
@@ -33,7 +31,9 @@ export function validateTimeline(): void {
   const structural: string[] = [];
   const placeholders: string[] = [];
 
-  if (totalDurationSec > MAX_DURATION_SEC) structural.push(`Timeline is ${totalDurationSec}s, exceeding the ${MAX_DURATION_SEC}s hard cap.`);
+  // The competition cap applies to the RENDERED video (segments minus transition overlaps).
+  const renderedSec = totalDurationInFrames / FPS;
+  if (renderedSec > MAX_DURATION_SEC) structural.push(`Rendered video is ${renderedSec.toFixed(2)}s, exceeding the ${MAX_DURATION_SEC}s (2:55) cap.`);
   for (const url of [LIVE_URL, REPO_URL]) if (url.includes("<")) placeholders.push(`End-card URL still contains a placeholder: ${url}`);
 
   for (const segment of timeline) {
@@ -43,7 +43,7 @@ export function validateTimeline(): void {
     if (narrationAvailable) {
       const narrationSec = mediaDurationsSec[`audio/${segment.narration}`];
       if (narrationSec === undefined) placeholders.push(`audio/${segment.narration} exists but its duration could not be read — the narration-cutoff check was skipped. Re-encode the file or re-run prepare-media.`);
-      else if (narrationSec > segment.targetDurationSec + TOLERANCE_SEC) placeholders.push(`audio/${segment.narration} is ${narrationSec.toFixed(2)}s but segment "${segment.id}" lasts ${segment.targetDurationSec}s — the narration would be cut off.`);
+      else if (NARRATION_DELAY_SEC + narrationSec > segment.targetDurationSec + TOLERANCE_SEC) placeholders.push(`audio/${segment.narration} is ${narrationSec.toFixed(2)}s and starts ${NARRATION_DELAY_SEC}s in (after the crossfade) but segment "${segment.id}" lasts ${segment.targetDurationSec}s — the narration would be cut off.`);
     }
     if (segment.type === "card") {
       if (segment.narration === null) placeholders.push(`Card segment "${segment.id}" has no narration, so it renders silent.`);
@@ -52,6 +52,7 @@ export function validateTimeline(): void {
     structural.push(...trimProblems(segment));
     const windowSec = segment.endAtSec - segment.startFromSec;
     if (windowSec - TOLERANCE_SEC > segment.targetDurationSec) placeholders.push(`Segment "${segment.id}" declares ${windowSec.toFixed(2)}s of source but lasts ${segment.targetDurationSec}s — the extra footage (and its audio) is cut at the sequence boundary.`);
+    if (windowSec + TOLERANCE_SEC < segment.targetDurationSec && !segment.holdLastFrame) placeholders.push(`Segment "${segment.id}" outlives its footage by ${(segment.targetDurationSec - windowSec).toFixed(2)}s — the tail holds the last frame. Set holdLastFrame: true if intended.`);
     if (segment.file === null || !availableRecordingFiles.includes(segment.file)) {
       placeholders.push(`Segment "${segment.id}" has no recording (${segment.file ?? "no file declared"} not in public/recordings/) and renders as a placeholder slate.`);
       continue;

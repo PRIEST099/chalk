@@ -6,9 +6,9 @@ The official OpenAI Build Week submission video for **Chalk — the board that d
 
 - Composition: `ChalkDemo`
 - Output: `1920×1080`, `30 fps`, H.264 MP4 (`yuv420p`)
-- Content duration: `171 seconds`; rendered length `166.5 seconds` (`2:46`) — each of the 9 segment boundaries overlaps by a 0.5s crossfade.
+- Rendered length: `168.3 seconds` (`2:48`) — each of the 9 segment boundaries overlaps by a 0.5s crossfade. Segments may outlive their footage by a few seconds via `holdLastFrame: true`, which holds the last frame while narration finishes.
 - Hard cap: `175 seconds` (`2:55`)
-- No music. Narration comes from the recordings' own live audio plus per-segment voiceover files (below).
+- Narration comes from the recordings' own live audio plus per-segment voiceover files (below). An optional `public/audio/background.mp3` plays as a bed at `MUSIC_VOLUME` (0.06 ≈ 20dB under the voice) with a fade-in and end fade-out — it must be a track you own the rights to (the hackathon forbids copyrighted music).
 
 ## Motion design
 
@@ -37,7 +37,7 @@ Record at **1920×1080, 30 fps, H.264 MP4**. Keep the supplied filenames exactly
 |---|---|---:|---|
 | Hook | `hook.mp4` | 8s | Chalk already alive and visually compelling; the title block animates in over the first 3 seconds and stays beside the frame for the whole hook. Muted — `vo-hook.mp3` narrates over it. |
 | Voice build | `segment-a-voice-build.mp4` | 55s | A teacher explains the water cycle while the live transcript, nodes, edges, cycle layout, and a correction appear. Live audio is the narration. |
-| Gestures | `segment-b-gestures.mp4` | 22s | Webcam PiP, point, pinch-select two nodes, then say “connect these two.” Live audio is the narration. |
+| Gestures | `segment-b-gestures.mp4` | 22s | Webcam PiP, point, pinch-select two nodes, then say “connect these two.” Ducked under `vo-gestures.mp3` while it plays; the live command audio returns at full volume after. |
 | Artifacts | `segment-c-artifacts.mp4` | 22s | Replay, exports, and requesting the GPT-5.6 Markdown handout. Narrated by `vo-artifacts.mp3`; clip audio ducks underneath. |
 | Handout | `handout.mp4` | 7s | The downloaded handout open in an editor — recap, glossary, questions, answers. Narrated by `vo-handout.mp3`; clip audio ducks underneath. |
 | Build story | `segment-d-buildstory.mp4` | 30s | The spec-first build story: Codex, the Responses API, strict structured operations, and validation. Narrated by `vo-build-story.mp3`. |
@@ -48,16 +48,17 @@ Every segment must carry audio — the hackathon requires narration throughout. 
 
 | File | Plays over | Max length |
 |---|---|---:|
-| `vo-hook.mp3` | hook recording (muted) | 8s |
-| `vo-problem.mp3` | problem card | 11s |
+| `vo-hook.mp3` | hook recording (muted) | 8.4s |
+| `vo-problem.mp3` | problem card | 19.4s |
+| `vo-gestures.mp3` | gestures recording (ducked while playing) | 13s — must end before the live “connect these two” moment |
 | `vo-gesture-title.mp3` | gesture title card | 4s |
-| `vo-artifacts.mp3` | artifacts recording (ducked) | 22s |
-| `vo-handout.mp3` | handout recording (ducked) | 7s |
+| `vo-artifacts.mp3` | artifacts recording (muted clip) | 8.5s |
+| `vo-handout.mp3` | handout recording (muted clip, holds last frame) | 10.5s |
 | `vo-build-title.mp3` | build title card | 4s |
-| `vo-build-story.mp3` | build story recording (ducked) | 30s |
+| `vo-build-story.mp3` | build story recording (muted clip, holds last frame) | 32.5s |
 | `vo-end-card.mp3` | end card | 8s |
 
-When a narration file is present, the underlying recording ducks to `NARRATION_DUCK_VOLUME` (0.15) instead of muting, so UI sounds stay faintly audible. Narration longer than its segment is flagged by validation because the tail would be cut off. To narrate a segment live in the recording instead, set its `narration` to `null` in `src/timeline.ts`.
+Narration starts `NARRATION_DELAY_SEC` (0.5s) into its segment — after the incoming crossfade — and validation requires it to end before the outgoing one, so adjacent segments' voiceovers can never talk over each other while both are mounted during a transition. When a narration file is present, the underlying recording ducks to `NARRATION_DUCK_VOLUME` (0.15) **only while the narration is playing** (delay + probed duration + 0.2s), then returns to full volume — this is how the gestures segment narrates its setup yet keeps the live “connect these two” fully audible. Recordings whose audio is never needed (artifacts, handout, build story) are `muted: true` outright. Narration longer than its segment is flagged by validation because the tail would be cut off. To narrate a segment live in the recording instead, set its `narration` to `null` in `src/timeline.ts`.
 
 To record a voiceover file: open Remotion Studio, play the target segment, and read its subtitles aloud into your recorder — the cues are the script, timed to fit.
 
@@ -71,8 +72,8 @@ Before any recordings exist, every recording segment renders as a Chalk-branded 
 
 `src/validate.ts` runs at composition load:
 
-- **Always fatal:** timeline over the 175s cap; a trim window (`endAtSec − startFromSec`) shorter than the segment, which would unmount the video and leave an empty frame for the tail.
-- **Fatal during `npm run render`, warning in Studio:** missing recordings, missing declared narration, silent segments, narration longer than its segment, recordings shorter than `endAtSec`, media whose duration could not be probed, trim windows longer than the segment (footage silently cut), subtitle-cue timing problems, and placeholder text in the end-card URLs. To deliberately render a draft anyway: `$env:REMOTION_ALLOW_PLACEHOLDERS="1"; npm run render` (PowerShell) or `REMOTION_ALLOW_PLACEHOLDERS=1 npm run render` (bash).
+- **Always fatal:** rendered video over the 175s (2:55) cap; a trim window that trims to nothing (`endAtSec ≤ startFromSec`).
+- **Fatal during `npm run render`, warning in Studio:** missing recordings, missing declared narration, silent segments, narration longer than its segment, recordings shorter than `endAtSec`, media whose duration could not be probed, trim windows longer than the segment (footage silently cut), a segment outliving its footage without `holdLastFrame: true` (the tail holds the last frame), subtitle-cue timing problems, and placeholder text in the end-card URLs. To deliberately render a draft anyway: `$env:REMOTION_ALLOW_PLACEHOLDERS="1"; npm run render` (PowerShell) or `REMOTION_ALLOW_PLACEHOLDERS=1 npm run render` (bash).
 
 ## Trim controls
 

@@ -39,6 +39,8 @@ export type RecordingSegment = SegmentBase & {
   startFromSec: number;
   endAtSec: number;
   muted: boolean;
+  /** Declares that the segment intentionally outlives its footage, holding the last frame. */
+  holdLastFrame?: boolean;
 };
 
 export type Segment = CardSegment | RecordingSegment;
@@ -47,12 +49,13 @@ export const timeline: readonly Segment[] = [
   {
     id: "hook",
     type: "recording",
-    targetDurationSec: 8,
+    targetDurationSec: 9.1,
     frame: "hero",
     narration: "vo-hook.mp3",
+    holdLastFrame: true,
     subtitles: [
-      { text: "When you teach, you can't talk and draw at the same time — especially over a video call.", startSec: 0.4, endSec: 4.6 },
-      { text: "This is Chalk — a board that draws itself.", startSec: 4.6, endSec: 7.8 },
+      { text: "When you teach, you can't talk and draw at the same time — especially over a video call.", startSec: 0.9, endSec: 5.1 },
+      { text: "This is Chalk — a board that draws itself.", startSec: 5.1, endSec: 8.3 },
     ],
     file: "hook.mp4",
     startFromSec: 0,
@@ -63,12 +66,13 @@ export const timeline: readonly Segment[] = [
   {
     id: "problem",
     type: "card",
-    targetDurationSec: 11,
+    targetDurationSec: 19.9,
     narration: "vo-problem.mp3",
     subtitles: [
-      { text: "Every teacher knows it — you can't talk and draw at the same time.", startSec: 0.4, endSec: 4.2 },
-      { text: "And online, your students only get your voice.", startSec: 4.2, endSec: 7.4 },
-      { text: "So Chalk draws while you talk — a live diagram any student can follow.", startSec: 7.4, endSec: 10.6 },
+      { text: "Every teacher knows it — you can't talk and draw at the same time.", startSec: 0.9, endSec: 6.1 },
+      { text: "Online, your students only get your voice — the diagram never happens.", startSec: 6.1, endSec: 11.9 },
+      { text: "Visual learners fall behind; notes vanish when the call ends.", startSec: 11.9, endSec: 15.7 },
+      { text: "So Chalk draws while you talk — a live diagram any student can follow.", startSec: 15.7, endSec: 19.4 },
     ],
     lines: ["When you teach, you can't talk and draw at the same time.", "Online, students only get your voice.", "So the board draws while you talk."],
   },
@@ -102,55 +106,58 @@ export const timeline: readonly Segment[] = [
   {
     id: "gestures",
     type: "recording",
-    targetDurationSec: 22,
+    targetDurationSec: 19,
     frame: "wide",
-    // "Connect these two" must stay audible — keep the live audio.
-    narration: null,
+    // Narration covers only the setup (trimmed to end at 4.7s); the clip ducks just while it
+    // plays, so the live "connect these two" at ~8s comes through at full volume.
+    narration: "vo-gestures.mp3",
     subtitles: [
-      { text: "My hands work with my voice.", startSec: 0.5, endSec: 4.2 },
-      { text: "I'm pointing at the board through my webcam.", startSec: 4.2, endSec: 9.5 },
-      { text: "When I say \"these two,\" GPT-5.6 resolves it from what I've selected.", startSec: 9.5, endSec: 16 },
-      { text: "Speech creates; gestures steer.", startSec: 16, endSec: 21.5 },
+      { text: "My hands work with my voice.", startSec: 1, endSec: 3.4 },
+      { text: "I'm pointing at the board through my webcam.", startSec: 3.4, endSec: 5.8 },
+      { text: "When I say \"these two,\" GPT-5.6 resolves it from what I've selected.", startSec: 5.8, endSec: 10.5 },
+      { text: "Speech creates; gestures steer.", startSec: 11, endSec: 18.5 },
     ],
     file: "segment-b-gestures.mp4",
     startFromSec: 0,
-    endAtSec: 22,
+    endAtSec: 19,
     muted: false,
   },
   {
     id: "artifacts",
     type: "recording",
-    targetDurationSec: 22,
+    targetDurationSec: 8.5,
     frame: "wide",
     narration: "vo-artifacts.mp3",
     subtitles: [
-      { text: "Every lesson becomes a durable artifact.", startSec: 0.4, endSec: 4.5 },
-      { text: "Students can replay exactly how the idea was built, step by step.", startSec: 4.5, endSec: 10.5 },
-      { text: "A second GPT-5.6 integration writes the class handout — recap, glossary, comprehension questions.", startSec: 10.5, endSec: 18 },
+      { text: "Every lesson becomes a durable artifact.", startSec: 0.9, endSec: 4.5 },
+      { text: "Students can replay exactly how the idea was built, step by step.", startSec: 4.5, endSec: 8.4 },
     ],
     file: "segment-c-artifacts.mp4",
     startFromSec: 0,
-    endAtSec: 22,
-    muted: false,
+    endAtSec: 8.5,
+    // Silent screen capture — the narration carries this segment.
+    muted: true,
   },
   {
     id: "handout",
     type: "recording",
-    targetDurationSec: 7,
+    targetDurationSec: 11.1,
     frame: "wide",
     narration: "vo-handout.mp3",
+    holdLastFrame: true,
     subtitles: [
-      { text: "Recap, glossary, three questions — nothing invented, all from what was actually taught.", startSec: 0.4, endSec: 6.6 },
+      { text: "A second GPT-5.6 integration writes the class handout — recap, glossary, comprehension questions.", startSec: 0.8, endSec: 10.9 },
     ],
     file: "handout.mp4",
     startFromSec: 0,
-    endAtSec: 7,
-    muted: false,
+    endAtSec: 7.21,
+    // Silent screen capture — the narration carries this segment.
+    muted: true,
   },
   {
     id: "build-title",
     type: "card",
-    targetDurationSec: 4,
+    targetDurationSec: 4.6,
     narration: "vo-build-title.mp3",
     // The narration reads the card line itself.
     subtitles: [],
@@ -159,28 +166,30 @@ export const timeline: readonly Segment[] = [
   {
     id: "build-story",
     type: "recording",
-    targetDurationSec: 30,
+    targetDurationSec: 33.1,
     frame: "wide",
     narration: "vo-build-story.mp3",
+    holdLastFrame: true,
     subtitles: [
-      { text: "The entire product was built with Codex, from a spec committed before the first line of code.", startSec: 0.4, endSec: 6 },
-      { text: "Codex built each phase against acceptance criteria — every decision is tagged in a running log.", startSec: 6, endSec: 12 },
-      { text: "GPT-5.6 on the Responses API emits strict structured output — add node, add edge, set layout.", startSec: 12, endSec: 19 },
-      { text: "Speech becomes an editable graph, not a picture.", startSec: 19, endSec: 24 },
-      { text: "Even API constraints are documented as Codex decisions in the log.", startSec: 24, endSec: 29.5 },
+      { text: "The entire product was built with Codex, from a spec committed before the first line of code.", startSec: 0.9, endSec: 7 },
+      { text: "Codex built each phase against acceptance criteria — every decision is tagged in a running log.", startSec: 7, endSec: 13.5 },
+      { text: "GPT-5.6 on the Responses API emits strict structured output — add node, add edge, set layout.", startSec: 13.5, endSec: 21 },
+      { text: "Speech becomes an editable graph, not a picture.", startSec: 21, endSec: 26 },
+      { text: "Even API constraints are documented as Codex decisions in the log.", startSec: 26, endSec: 32.4 },
     ],
     file: "segment-d-buildstory.mp4",
     startFromSec: 0,
-    endAtSec: 30,
-    muted: false,
+    endAtSec: 29,
+    // Silent screen capture (repo/DEVLOG scroll) — the narration carries this segment.
+    muted: true,
   },
   {
     id: "end-card",
     type: "card",
-    targetDurationSec: 8,
+    targetDurationSec: 8.5,
     narration: "vo-end-card.mp3",
     subtitles: [
-      { text: "For teachers, tutors, and every student who learns by seeing.", startSec: 0.5, endSec: 7.5 },
+      { text: "For teachers, tutors, and every student who learns by seeing.", startSec: 1, endSec: 8 },
     ],
     lines: ["Chalk — the board that draws itself.", "Education track — OpenAI Build Week 2026", LIVE_URL, REPO_URL],
   },
@@ -190,6 +199,9 @@ export const timeline: readonly Segment[] = [
 // video is shorter than the sum of segment durations by one transition per boundary.
 export const TRANSITION_SEC = 0.5;
 export const TRANSITION_FRAMES = Math.round(TRANSITION_SEC * FPS);
+// Narration starts after the incoming crossfade and must end before the outgoing one, so two
+// segments' voiceovers can never speak over each other while both are mounted.
+export const NARRATION_DELAY_SEC = TRANSITION_SEC;
 
 export const totalDurationSec = timeline.reduce((sum, segment) => sum + segment.targetDurationSec, 0);
 export const segmentDurationInFrames = (segment: Segment) => Math.round(segment.targetDurationSec * FPS);
