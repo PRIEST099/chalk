@@ -50,6 +50,7 @@ export function HandTracker({ active, teacherName, onTeacherNameChange, status, 
   const lastFrameRef = useRef(0);
   const fpsRef = useRef({ at: 0, frames: 0, value: 0 });
   const smoothRef = useRef<{ x: number; y: number } | null>(null);
+  const pinchLockRef = useRef(false);
   const pinchActiveRef = useRef(false);
   const pinchCooldownRef = useRef(0);
   const swipeCooldownRef = useRef(0);
@@ -116,11 +117,17 @@ export function HandTracker({ active, teacherName, onTeacherNameChange, status, 
       const pinchDistance = distance(hand[4], hand[8]) / handSize;
       const indexExtended = distance(hand[8], hand[0]) > distance(hand[6], hand[0]) * 1.12;
       const openPalm = [8, 12, 16, 20].every((tip, index) => distance(hand[tip], hand[0]) > distance(hand[[6, 10, 14, 18][index]], hand[0]) * 1.1);
-      const raw = { x: 1 - hand[8].x, y: hand[8].y };
-      const previous = smoothRef.current;
-      const smooth = previous ? { x: previous.x * 0.72 + raw.x * 0.28, y: previous.y * 0.72 + raw.y * 0.28 } : raw;
-      smoothRef.current = smooth;
-      if (indexExtended) onPoint(smooth);
+      // Closing the fingers to pinch drags the fingertip downward; freeze the cursor while the
+      // pinch is forming so the pointer stays on the node the user aimed at.
+      if (!pinchLockRef.current && pinchDistance < 0.5) pinchLockRef.current = true;
+      if (pinchLockRef.current && pinchDistance > 0.55) pinchLockRef.current = false;
+      if (!pinchLockRef.current) {
+        const raw = { x: 1 - hand[8].x, y: hand[8].y };
+        const previous = smoothRef.current;
+        const smooth = previous ? { x: previous.x * 0.72 + raw.x * 0.28, y: previous.y * 0.72 + raw.y * 0.28 } : raw;
+        smoothRef.current = smooth;
+        if (indexExtended) onPoint(smooth);
+      }
       if (!pinchActiveRef.current && pinchDistance < 0.32 && now - pinchCooldownRef.current > 650) {
         pinchActiveRef.current = true;
         pinchCooldownRef.current = now;
@@ -134,7 +141,7 @@ export function HandTracker({ active, teacherName, onTeacherNameChange, status, 
         onSwipeLeft();
       }
       wristRef.current = { x: hand[0].x, at: now };
-      onDebug({ gesture: pinchActiveRef.current ? "Pinch" : openPalm ? "Open palm" : indexExtended ? "Point" : "Tracking", pinchDistance, point: smooth, fps: fps.value });
+      onDebug({ gesture: pinchActiveRef.current ? "Pinch" : openPalm ? "Open palm" : indexExtended ? "Point" : "Tracking", pinchDistance, point: smoothRef.current ?? { x: 0, y: 0 }, fps: fps.value });
     } else {
       noHandFramesRef.current += 1;
       if (noHandFramesRef.current === HAND_LOST_FRAMES) {

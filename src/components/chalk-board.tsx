@@ -67,6 +67,12 @@ const useBoard = create<BoardStore>((set, get) => ({
 
 if (process.env.NODE_ENV === "development" && typeof window !== "undefined") (window as unknown as { __chalkBoard?: typeof useBoard }).__chalkBoard = useBoard;
 
+// Gesture pointing tunables: forgiving hit-boxes and jitter tolerance make on-camera pointing reliable.
+const HIT_PAD = 12;
+const POINT_DWELL_MS = 300;
+const HOVER_EXIT_MS = 180;
+const PINCH_GRACE_MS = 600;
+
 const accent: Record<string, string> = { concept: "#e6a75b", actor: "#7ab8c4", process: "#b394d8", stage: "#77b78c", data: "#d7828b", example: "#d8b55e", note: "#c6c5bd" };
 const WATER_CYCLE = ["The sun heats the ocean, causing evaporation.", "Water vapor rises and cools into clouds through condensation.", "Then precipitation falls from clouds back to the ocean, and the cycle repeats."];
 const WORLD_WAR_I = ["World War One began in 1914 after the assassination of Archduke Franz Ferdinand.", "The alliance system drew Germany, Austria-Hungary, France, Britain, and Russia into the conflict.", "The war ended in 1918, followed by the Treaty of Versailles."];
@@ -98,7 +104,8 @@ function ViewportFitter({ signature, manualUntilRef }: { signature: string; manu
 function GestureLayer({ areaRef, diagram, setPointed, toggleSelected, undo, onTrackerError, debugActiveRef, setDebug, handTrackingRequested, onHandTrackingChange, teacherName, onTeacherNameChange, status }: { areaRef: React.RefObject<HTMLElement | null>; diagram: Diagram; setPointed: (id: string | null) => void; toggleSelected: () => void; undo: () => void; onTrackerError: (message: string) => void; debugActiveRef: React.RefObject<boolean>; setDebug: (debug: HandDebug & { screen: { x: number; y: number }; flow: { x: number; y: number }; pointed: string | null }) => void; handTrackingRequested: boolean; onHandTrackingChange: (enabled: boolean) => void; teacherName: string; onTeacherNameChange: (name: string) => void; status: BoardStatus }) {
   const { getInternalNode, screenToFlowPosition, fitView } = useReactFlow();
   const cursorRef = useRef<HTMLDivElement>(null);
-  const hoverRef = useRef<{ id: string; since: number } | null>(null);
+  const hoverRef = useRef<{ id: string; since: number; lastSeen: number } | null>(null);
+  const lastHoverRef = useRef<{ id: string; at: number } | null>(null);
   const gesturePointedRef = useRef<string | null>(null);
   const trackingActiveRef = useRef(false);
   useEffect(() => { const fit = () => void fitView({ padding: 0.22, duration: 300 }); window.addEventListener("chalk:fit-view", fit); return () => window.removeEventListener("chalk:fit-view", fit); }, [fitView]);
@@ -109,19 +116,41 @@ function GestureLayer({ areaRef, diagram, setPointed, toggleSelected, undo, onTr
     if (!bounds) return;
     const screen = { x: bounds.left + point.x * bounds.width, y: bounds.top + point.y * bounds.height };
     const flow = screenToFlowPosition(screen);
-    if (cursorRef.current) { cursorRef.current.style.opacity = "1"; cursorRef.current.style.transform = `translate(${screen.x}px, ${screen.y}px) translate(-50%, -50%)`; }
+    if (cursorRef.current) {
+      // Ancestor CSS can re-root the cursor's positioning context (observed: the canvas section),
+      // so anchor against the measured containing block instead of trusting viewport-fixed math.
+      const origin = cursorRef.current.offsetParent?.getBoundingClientRect();
+      cursorRef.current.style.opacity = "1";
+      cursorRef.current.style.transform = `translate(${screen.x - (origin?.left ?? 0)}px, ${screen.y - (origin?.top ?? 0)}px) translate(-50%, -50%)`;
+    }
     const node = diagram.nodes.find((candidate) => {
       const size = getInternalNode(candidate.id)?.measured;
       const width = size?.width || nodeBoxWidth(candidate);
       const height = size?.height || NODE_HEIGHT;
-      return flow.x >= candidate.x && flow.x <= candidate.x + width && flow.y >= candidate.y && flow.y <= candidate.y + height;
+      return flow.x >= candidate.x - HIT_PAD && flow.x <= candidate.x + width + HIT_PAD && flow.y >= candidate.y - HIT_PAD && flow.y <= candidate.y + height + HIT_PAD;
     });
     const id = node?.id ?? null;
+    const now = performance.now();
     const current = hoverRef.current;
-    if (!id) { hoverRef.current = null; releaseGesturePointed(); return; }
-    if (!current || current.id !== id) { hoverRef.current = { id, since: performance.now() }; return; }
-    if (performance.now() - current.since >= 400) pointTo(id);
+    if (!id) {
+      // Brief exits are hand jitter, not intent — keep the dwell and pointed state alive.
+      if (current && now - current.lastSeen < HOVER_EXIT_MS) return;
+      hoverRef.current = null;
+      releaseGesturePointed();
+      return;
+    }
+    lastHoverRef.current = { id, at: now };
+    if (!current || current.id !== id) { hoverRef.current = { id, since: now, lastSeen: now }; return; }
+    current.lastSeen = now;
+    if (now - current.since >= POINT_DWELL_MS) pointTo(id);
   }, [areaRef, diagram.nodes, getInternalNode, pointTo, releaseGesturePointed, screenToFlowPosition]);
+  const pinchSelect = useCallback(() => {
+    const pointed = useBoard.getState().pointedNodeIds[0] ?? null;
+    if (pointed !== null) { toggleSelected(); return; }
+    // The fingertip dips while the fingers close: honor a pinch aimed at a node moments ago.
+    const recent = lastHoverRef.current;
+    if (recent && performance.now() - recent.at < PINCH_GRACE_MS) { pointTo(recent.id); toggleSelected(); }
+  }, [pointTo, toggleSelected]);
   const clearGesturePointer = useCallback(() => { if (cursorRef.current) cursorRef.current.style.opacity = "0"; hoverRef.current = null; releaseGesturePointed(); }, [releaseGesturePointed]);
   const onTrackingChange = useCallback((enabled: boolean) => {
     onHandTrackingChange(enabled);
@@ -136,7 +165,7 @@ function GestureLayer({ areaRef, diagram, setPointed, toggleSelected, undo, onTr
     const screen = bounds ? { x: bounds.left + debug.point.x * bounds.width, y: bounds.top + debug.point.y * bounds.height } : { x: 0, y: 0 };
     setDebug({ ...debug, screen, flow: screenToFlowPosition(screen), pointed: useBoard.getState().pointedNodeIds[0] ?? null });
   }, [areaRef, debugActiveRef, screenToFlowPosition, setDebug]);
-  return <><div ref={cursorRef} className="pointer-events-none fixed z-30 size-4 rounded-full border-2 border-[#e6a75b] bg-[#e6a75b]/30 opacity-0 transition-opacity" /><HandTracker active={handTrackingRequested} teacherName={teacherName} onTeacherNameChange={onTeacherNameChange} status={status} onPoint={onPoint} onPinch={toggleSelected} onSwipeLeft={undo} onError={onTrackerError} onEnabledChange={onTrackingChange} onHandLost={clearGesturePointer} onDebug={onDebug} /></>;
+  return <><div ref={cursorRef} className="pointer-events-none absolute left-0 top-0 z-30 size-4 rounded-full border-2 border-[#e6a75b] bg-[#e6a75b]/30 opacity-0 transition-opacity" /><HandTracker active={handTrackingRequested} teacherName={teacherName} onTeacherNameChange={onTeacherNameChange} status={status} onPoint={onPoint} onPinch={pinchSelect} onSwipeLeft={undo} onError={onTrackerError} onEnabledChange={onTrackingChange} onHandLost={clearGesturePointer} onDebug={onDebug} /></>;
 }
 
 function isSession(value: unknown): value is Session {
@@ -305,11 +334,15 @@ export function ChalkBoard() {
     setIsExportingHandout(true);
     setStatus("Thinking");
     try {
-      const response = await fetch("/api/summarize", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title, subjectHint, transcript, diagram: compactDiagram(diagram) }) });
+      // Clamp free-text fields to the server contract so a blanked title or long subject can never 400.
+      const response = await fetch("/api/summarize", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title: title.trim().slice(0, 160) || "Untitled lesson", subjectHint: subjectHint.trim().slice(0, 120), transcript: transcript.trim().slice(-16_000), diagram: compactDiagram(diagram) }) });
       const body: unknown = await response.json();
-      if (!response.ok || !body || typeof body !== "object" || !("markdown" in body) || typeof body.markdown !== "string") throw new Error();
+      if (!response.ok || !body || typeof body !== "object" || !("markdown" in body) || typeof body.markdown !== "string") {
+        const serverMessage = body && typeof body === "object" && "error" in body && typeof (body as { error: unknown }).error === "string" ? (body as { error: string }).error : null;
+        throw new Error(serverMessage ?? "Chalk could not create the handout yet. Please try again.");
+      }
       download("chalk-handout.md", body.markdown, "text/markdown");
-    } catch { setError("Chalk could not create the handout yet. Please try again."); }
+    } catch (caught) { setError(caught instanceof Error && caught.message ? caught.message : "Chalk could not create the handout yet. Please try again."); }
     finally { setIsExportingHandout(false); setStatus("Idle"); }
   };
   const restoreSession = useCallback((session: Session) => {
@@ -362,7 +395,7 @@ export function ChalkBoard() {
   return <main className="relative flex h-[100dvh] flex-col overflow-hidden bg-[#0e1719] text-[#f5f0df]">
     <header className="z-30 flex min-h-16 flex-nowrap items-center gap-x-3 border-b border-white/10 bg-[#142023]/95 px-4 py-3 backdrop-blur-xl sm:gap-x-4 sm:px-5">
       <div className="flex shrink-0 items-center gap-2.5 text-[#f3c887]"><span className="grid size-8 place-items-center rounded-lg border border-[#e6a75b]/30 bg-[#e6a75b]/10 text-lg">✦</span><span className="text-sm font-semibold tracking-wide text-[#f5f0df]">Chalk</span></div>
-      <div className="flex min-w-0 flex-1 items-center gap-2"><input aria-label="Lesson title" className="min-w-0 flex-1 border-b border-transparent bg-transparent px-1 py-1 text-sm font-medium outline-none transition focus:border-[#e6a75b]" value={title} onChange={(event) => setTitle(event.target.value)} /><span className="hidden h-4 w-px bg-white/15 sm:block" /><input aria-label="Subject hint" className="hidden w-32 border-b border-transparent bg-transparent px-1 py-1 text-xs text-[#aebbb5] outline-none transition placeholder:text-[#6f827c] focus:border-[#e6a75b] sm:block sm:w-44" value={subjectHint} onChange={(event) => setSubjectHint(event.target.value)} placeholder="Subject" /></div>
+      <div className="flex min-w-0 flex-1 items-center gap-2"><input aria-label="Lesson title" maxLength={160} className="min-w-0 flex-1 border-b border-transparent bg-transparent px-1 py-1 text-sm font-medium outline-none transition focus:border-[#e6a75b]" value={title} onChange={(event) => setTitle(event.target.value)} /><span className="hidden h-4 w-px bg-white/15 sm:block" /><input aria-label="Subject hint" maxLength={120} className="hidden w-32 border-b border-transparent bg-transparent px-1 py-1 text-xs text-[#aebbb5] outline-none transition placeholder:text-[#6f827c] focus:border-[#e6a75b] sm:block sm:w-44" value={subjectHint} onChange={(event) => setSubjectHint(event.target.value)} placeholder="Subject" /></div>
       <time className="shrink-0 font-mono text-xs tabular-nums text-[#aebbb5]" aria-label="Elapsed session time">{formatElapsed(elapsedSeconds)}</time><span className={`shrink-0 whitespace-nowrap rounded-full border px-2.5 py-1 text-xs font-medium ${statusTone}`}>{status}</span>
     </header>
 

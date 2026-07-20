@@ -1,6 +1,6 @@
 # Chalk — The Board That Draws Itself
 
-> **Hero GIF placeholder:** `[ADD HERO GIF OR SCREENSHOT HERE]`
+![Chalk in one loop: a spoken history lesson draws itself as a timeline, a gesture cursor pinch-selects two nodes and "Connect these two" links them, and the lesson becomes a class handout — You talk. The board draws.](docs/hero.gif)
 
 Chalk is a live teaching board that listens to an explanation and grows a clean, animated concept diagram alongside it.
 
@@ -64,13 +64,13 @@ Codex scaffolded the strict TypeScript application, built the server-to-canvas o
 
 ### Key decisions we made ourselves
 
-[ADD PERSONAL DETAIL: describe why you chose a live visual teaching board and the education problem you want to solve.]
+The idea came from my own learning experience. I tend to understand concepts much more easily when an explanation is accompanied by a visual representation rather than words alone. Some of the best educational videos on YouTube explain ideas by drawing diagrams and animations as they talk, and I found those visuals often made concepts click for me in a way that spoken explanations or text by themselves didn't. That inspired me to build Chalk, a tool that automatically creates those supporting visuals so teachers can explain naturally while students have a clear visual map to follow and revisit later.
 
 We kept the Diagram Director prompt intentionally narrow: it reuses concepts before creating duplicates, treats speech as the ground truth, and resolves “these two” from visible pointer context. We also kept gesture scope to point, pinch, and open-palm swipe so every action has mouse and keyboard parity.
 
 ### How the collaboration worked
 
-[ADD PERSONAL DETAIL: describe how you directed Codex, reviewed the acceptance tests, and made final product calls.]
+Most implementation started with a detailed specification that I wrote for Codex. I reviewed generated code, requested refactors when the architecture became too complex, and continually refined prompts based on testing. I was responsible for deciding the product scope, validating acceptance tests, and ensuring each feature fit the overall teaching experience before it was considered complete.
 
 The product owner approved phase gates and tested the real interaction paths; Codex implemented focused increments, logged notable technical decisions in `DEVLOG.md`, and verified typecheck, lint, and tests before commits. That collaboration preserved a small, coherent scope while leaving a clear implementation record for the project.
 

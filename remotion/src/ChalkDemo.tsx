@@ -124,7 +124,7 @@ const Card: React.FC<{ segment: CardSegment }> = ({ segment }) => {
   const isEndCard = segment.id === "end-card";
   return <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", padding: 150, color: chalk, fontFamily, textAlign: "center" }}><div style={{ maxWidth: 1500 }}>
     <Reveal delaySec={0} style={{ marginBottom: 34 }}><div style={{ color: amber, fontWeight: 700, fontSize: isEndCard ? 32 : 26, letterSpacing: 4 }}>CHALK</div></Reveal>
-    {segment.lines.map((line, index) => <Reveal key={line} delaySec={0.15 + index * CARD_SECOND_LINE_DELAY_SEC * 0.5} style={{ marginTop: index === 0 ? 0 : 26 }}><div style={{ color: index > 1 ? muted : chalk, fontSize: isEndCard ? (index === 0 ? 66 : 32) : 68, fontWeight: index === 0 ? 600 : 500, lineHeight: 1.18 }}>{line}</div></Reveal>)}
+    {segment.lines.map((line, index) => <Reveal key={line} delaySec={0.15 + index * CARD_SECOND_LINE_DELAY_SEC * 0.5} style={{ marginTop: index === 0 ? 0 : 26 }}><div style={{ color: isEndCard && index > 1 ? muted : chalk, fontSize: isEndCard ? (index === 0 ? 66 : 32) : 68, fontWeight: index === 0 ? 600 : 500, lineHeight: 1.18 }}>{line}</div></Reveal>)}
   </div></div>;
 };
 
